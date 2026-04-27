@@ -8,7 +8,7 @@ This workflow helps analyze project requirements and break them down into indivi
 
 ## Features
 
-- Manual trigger workflow execution
+- Manual trigger workflow execution..
 - Project requirements analysis
 - Task breakdown with estimations
 - Risk and uncertainty assessment
