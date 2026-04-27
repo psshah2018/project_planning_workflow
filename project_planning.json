@@ -1,0 +1,430 @@
+{
+  "name": "Project Planning",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        0
+      ],
+      "id": "f8c0c797-47ba-4ee6-865b-4208e6cffd90",
+      "name": "When clicking ‘Execute workflow’"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "={\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"Title\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n        \"Overview\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"Task Breakdown\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t}\n\t}\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -96,
+        224
+      ],
+      "id": "8e21d58b-c132-4026-b6b7-a6645bdf8f43",
+      "name": "Structured Output Parser",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"Title\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n        \"Overview\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n\t\t\"Task Breakdown and Estimations\": {\n\t\t\t\"type\": \"array\",\n\t\t\t\"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n      \"Summary of Risks and Uncertainties\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"Conclusion\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        272,
+        224
+      ],
+      "id": "0cd3d15b-15e1-48e1-85de-5375149f907e",
+      "name": "Structured Output Parser1",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=description: Carefully analyze the project_requirements for the {{ $('Input_Data').item.json.project_type }} project and break them down into individual tasks. Define each task's scope in detail, set achievable timelines, and ensure that all dependencies are accounted for: {{ $('Input_Data').item.json.project_requirements }}\n\nTeam members: {{ $('Input_Data').item.json.team_members,null }}\nexpected_output: A comprehensive list of tasks with detailed descriptions, timelines, dependencies, and deliverables. Your final output MUST include a Gantt chart or similar timeline visualization specific to the {{ $('Input_Data').item.json.project_type }} project.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=  role: The Ultimate Project Planner\n  goal: To meticulously break down the {{ $('Input_Data').item.json.project_type }} project into\n    actionable tasks, ensuring no detail is overlooked, and setting\n    precise timelines that align with the {{ $('Input_Data').item.json.project_objectives }}.\n  backstory: As a veteran project manager, you’ve led numerous successful projects, particularly in {{ $('Input_Data').item.json.industry }}. Your keen eye for detail and strategic thinking have always ensured that projects are delivered on time and within scope. Now, you're tasked with planning the next groundbreaking {{ $('Input_Data').item.json.project_type }} project."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        -224,
+        0
+      ],
+      "id": "4c174258-0ca7-4f7a-8d8c-0be6185a01cf",
+      "name": "Project Planning Agent",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=  description: >\n    Thoroughly evaluate each task in the {{$('Input_Data').item.json.project_type}} project to\n    estimate the time, resources, and effort required.\n    Use historical data, task complexity, and available resources to\n    provide a realistic estimation for each task.\n  expected_output: >\n    A detailed estimation report outlining the time, resources, and\n    effort required for each task in the {{$('Input_Data').item.json.project_type}} project.\n    Your final report MUST include a summary of any risks or\n    uncertainties associated with the estimations.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=role: Expert Estimation Analyst\ngoal: Provide highly accurate time, resource, and effort estimations for each task in the {{$('Input_Data').item.json.project_type}} project to ensure it is delivered efficiently and on budget.\nbackstory: You are the go-to expert for project estimation in {{$('Input_Data').item.json.industry}}. With a wealth of experience and access to vast historical data, you can predict the resources required for any task with remarkable accuracy. Your precision ensures that the {{$('Input_Data').item.json.project_type}} project remains feasible and avoids unnecessary delays or budget overruns."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        112,
+        0
+      ],
+      "id": "e29cef97-5b2a-410d-bd09-8d9617accad5",
+      "name": "Estimation Agent",
+      "alwaysOutputData": true,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=description: Strategically allocate tasks for the {{$('Input_Data').item.json.project_type }} project to team members based on their skills, availability, and current workload. Ensure that each task is assigned to the most suitable team member and that the workload is evenly distributed.\n\nTeam members: \n{{$('Input_Data').item.json.team_members}}\n\nexpected_output: A resource allocation chart showing which team members are responsible for each task in the {{$('Input_Data').item.json.project_type}} project, along with start and end dates. Your final output MUST also include a summary explaining the rationale behind each allocation decision.",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=role: Resource Allocation Strategist\ngoal: Optimize the allocation of tasks for the {{$('Input_Data').item.json.project_type}} project by balancing team members' skills, availability, and current workload to maximize efficiency and project success.\nbackstory: With a deep understanding of team dynamics and resource anagement in {{$('Input_Data').item.json.industry}}, you have a track record of ensuring that the right person is always assigned to the right task.     Your strategic thinking ensures that the {{$('Input_Data').item.json.project_type}} project team is utilized to its full potential without overburdening any individual."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        480,
+        0
+      ],
+      "id": "a70da230-f99a-4789-a117-0e4206f866e6",
+      "name": "Resource Allocation Agent",
+      "notesInFlow": true
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n\t\"type\": \"object\",\n\t\"properties\": {\n\t\t\"Title\": {\n\t\t\t\"type\": \"string\"\n\t\t},\n      \"Overview\": {\n\t\t\t\"type\": \"array\",\n            \"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n      \"Required Resources\": {\n\t\t\t\"type\": \"array\",\n            \"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n      \"Summary of Risks and Uncertainties\": {\n\t\t\t\"type\": \"array\",\n         \"items\": {\n\t\t\t\t\"type\": \"string\"\n\t\t\t}\n\t\t},\n      \"Conclusion\": {\n\t\t\t\"type\": \"string\"\n\t\t}\n\t}\n}",
+        "autoFix": "={{ true }}",
+        "customizeRetryPrompt": "={{ true }}",
+        "prompt": "=Instructions:\n--------------\n{ The output must always display all the json tags}\n--------------\nCompletion:\n--------------\n{completion}\n--------------\n\nAbove, the Completion did not satisfy the constraints given in the Instructions.\nError:\n--------------\n{error}\n--------------\n\nPlease try again. Please only respond with an answer that satisfies the constraints laid out in the Instructions:"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        624,
+        224
+      ],
+      "id": "4e16a51a-162a-476b-87d6-a1c23d584fde",
+      "name": "Structured Output Parser2",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -224,
+        224
+      ],
+      "id": "cd05004e-d552-438e-9583-05451c4cf511",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "btt3s54CEvsfy9tv",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        144,
+        224
+      ],
+      "id": "aa73380e-6e6a-4f35-8055-1338b63b39d9",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "btt3s54CEvsfy9tv",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        496,
+        224
+      ],
+      "id": "324217f5-fcee-4a18-8566-9b32c227407d",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "btt3s54CEvsfy9tv",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "modelName": "models/gemini-flash-latest",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGoogleGemini",
+      "typeVersion": 1,
+      "position": [
+        -672,
+        336
+      ],
+      "id": "09173616-db91-4b69-bbfc-fbdea4542fc0",
+      "name": "Google Gemini Chat Model",
+      "credentials": {
+        "googlePalmApi": {
+          "id": "W4AszlEVpT1bxre1",
+          "name": "Google Gemini(PaLM) Api account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "59e8fd4b-516d-4cac-bff2-8c0c1f312e84",
+              "name": "=project_type",
+              "value": "=Website",
+              "type": "string"
+            },
+            {
+              "id": "eb6d04c6-950f-4614-9a00-25bd4326485c",
+              "name": "=industry",
+              "value": "=Technology",
+              "type": "string"
+            },
+            {
+              "id": "227ec4e0-e037-4186-8f99-aa23f8a642aa",
+              "name": "=team_members",
+              "value": "=John Doe (Project Manager)\nJane Doe (Software Engineer)\nBob Smith (Designer)\nAlice Johnson (QA Engineer)\nTom Brown (QA Engineer)",
+              "type": "string"
+            },
+            {
+              "id": "80ed6fe5-7f41-4052-a0ad-108b88ac83d4",
+              "name": "=project_requirements",
+              "value": "=- Create a responsive design that works well on desktop and mobile devices \n- Implement a modern, visually appealing user interface with a clean look \n- Develop a user-friendly navigation system with intuitive menu structure \n- Include an \"About Us\" page highlighting the company's history and values \n- Design a \"Services\" page showcasing the business's offerings with descriptions \n- Create a \"Contact Us\" page with a form and integrated map for communication \n- Implement a blog section for sharing industry news and company updates \n- Ensure fast loading times and optimize for search engines (SEO) \n- Integrate social media links and sharing capabilities \n- Include a testimonials section to showcase customer feedback and build trust",
+              "type": "string"
+            },
+            {
+              "id": "7316d522-92a3-4037-a0ee-1794761b0eeb",
+              "name": "=project_objectives",
+              "value": "=Create a website for a small business",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -448,
+        0
+      ],
+      "id": "c081936d-409b-4596-bf4e-ded963ef91a6",
+      "name": "Input_Data"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-5-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        560,
+        432
+      ],
+      "id": "38cf22ac-87dd-4aad-857e-9bc3f68dbe83",
+      "name": "OpenAI Chat Model4",
+      "credentials": {
+        "openAiApi": {
+          "id": "btt3s54CEvsfy9tv",
+          "name": "OpenAi account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "When clicking ‘Execute workflow’": {
+      "main": [
+        [
+          {
+            "node": "Input_Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Project Planning Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Estimation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Project Planning Agent": {
+      "main": [
+        [
+          {
+            "node": "Estimation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Estimation Agent": {
+      "main": [
+        [
+          {
+            "node": "Resource Allocation Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser2": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Resource Allocation Agent",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Project Planning Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Estimation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Resource Allocation Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Gemini Chat Model": {
+      "ai_languageModel": [
+        []
+      ]
+    },
+    "Input_Data": {
+      "main": [
+        [
+          {
+            "node": "Project Planning Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model4": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Structured Output Parser2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "d1e6d8f4-555f-48cb-9bd0-0407b87f8628",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "6615b656b8371fddd13c58341e0cea8d6dcdf664a545af635d49e593619368af"
+  },
+  "id": "wjCma3ixH2kzcixP",
+  "tags": []
+}
